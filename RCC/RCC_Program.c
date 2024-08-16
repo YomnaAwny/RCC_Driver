@@ -7,154 +7,150 @@
 
 #include "RCC_Interface.h"
 
-#define BDRST 1
+
 
 
 void RCC_Software_Rest(){
 
-	SET_BIT(*RCC_BDCR,BDRST);
-	//RCC->CR=0x00000083;
+	RCC->BDCR |= (1<<BDRST);
+
 
 }
 
 
-void RCC_Init(u8 clk){
+void RCC_Init(void){
+#if clk==HSE_Bybass
 
-#if(clk==0)
-	SET_BIT(*RCC_CR,HSEBYP);
-	SET_BIT(*RCC_CR,HSEON);
-#elif(clk==1)
-	SET_BIT(*RCC_CR,HSEON);
-#elif (clk==2)
-	SLC_HSI();
+	RCC->CR |= (1<<HSEON);
+	RCC->CR |= (1<<HSEBYP);
+	while(!((RCC->CR &(1<< HSERDY))>>HSERDY));
+	RCC->CFGR &=~(0b11 <<0);
+	RCC->CFGR |= (0b01 <<0);
+
+
+#elif clk==HSE_Crystal
+
+	RCC->CR |= (1<<HSEON);
+	while(!((RCC->CR &(1<<HSERDY ))>>HSERDY ));
+	RCC->CFGR &=~(0b11 <<0);
+	RCC->CFGR |= (0b01 <<0);
+#elif clk==HSI
+
+	RCC->CR |= (1<<0);
+	while(!((RCC->CR &(1<< HSIRDY))>>1));
+	RCC->CFGR &=~(0b11 <<0);
 #else
 
-#ifdef HSE
-CLR_BIT(*RCC_CR,PLLON);
-SET_BIT(*RCC_CFGR,PLLSRC);
-#ifdef Halfed
-SET_BIT(*RCC_CFGR,PLLXTPRE);
+#if PLLSLC==HSE
+ //HSE 1 FOR PLL
+RCC->CR |= (1<<PLLSRC);
+#if Halfed==1
+
+RCC->CR |= (1<<PLLSRC);
 #else
-CLR_BIT(*RCC_CFGR,PLLXTPRE);
+
+RCC->CFGR &=~(1 <<PLLXTPRE);
 #endif
-#else
-CLR_BIT(*RCC_CR,PLLON);
-CLR_BIT(*RCC_CFGR,PLLSRC);
+#else //PLL SLC IS HSI
+ // 0 FOR HSI IN PLL
+RCC->CFGR &=~(1 <<PLLSRC);
 #endif
 
-switch(MULL){
+switch(PLLMULL){
 case 2:
-   CLR_BIT(*RCC_CFGR,PLLMULL1);
-   CLR_BIT(*RCC_CFGR,PLLMULL2);
-   CLR_BIT(*RCC_CFGR,PLLMULL3);
-   CLR_BIT(*RCC_CFGR,PLLMULL4);
+ RCC->CFGR &=~(0b1111 <<PLLMULL1);
    break;
 case 3:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    CLR_BIT(*RCC_CFGR,PLLMULL2);
-    CLR_BIT(*RCC_CFGR,PLLMULL3);
-    CLR_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+    RCC->CFGR |=(0b0001 <<PLLMULL1);
     break;
 case 4:
-	CLR_BIT(*RCC_CFGR,PLLMULL1);
-	SET_BIT(*RCC_CFGR,PLLMULL2);
-	CLR_BIT(*RCC_CFGR,PLLMULL3);
-	CLR_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b0010 <<PLLMULL1);
 break;
 case 5:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    SET_BIT(*RCC_CFGR,PLLMULL2);
-	CLR_BIT(*RCC_CFGR,PLLMULL3);
-	CLR_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b0011 <<PLLMULL1);
 case 6:
-	CLR_BIT(*RCC_CFGR,PLLMULL1);
-	CLR_BIT(*RCC_CFGR,PLLMULL2);
-	SET_BIT(*RCC_CFGR,PLLMULL3);
-	CLR_BIT(*RCC_CFGR,PLLMULL4);
+    RCC->CFGR &=~(0b1111 <<PLLMULL1);
+    RCC->CFGR |=(0b0100 <<PLLMULL1);
 break;
 case 7:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    CLR_BIT(*RCC_CFGR,PLLMULL2);
-	SET_BIT(*RCC_CFGR,PLLMULL3);
-	CLR_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b0101 <<PLLMULL1);
 break;
 case 8:
-   CLR_BIT(*RCC_CFGR,PLLMULL1);
-   SET_BIT(*RCC_CFGR,PLLMULL2);
-   SET_BIT(*RCC_CFGR,PLLMULL3);
-   CLR_BIT(*RCC_CFGR,PLLMULL4);
+    RCC->CFGR &=~(0b1111 <<PLLMULL1);
+    RCC->CFGR |=(0b0110 <<PLLMULL1);
    break;
 case 9:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    SET_BIT(*RCC_CFGR,PLLMULL2);
-    SET_BIT(*RCC_CFGR,PLLMULL3);
-    CLR_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+    RCC->CFGR |=(0b0111 <<PLLMULL1);
     break;
 case 10:
-	CLR_BIT(*RCC_CFGR,PLLMULL1);
-	CLR_BIT(*RCC_CFGR,PLLMULL2);
-	CLR_BIT(*RCC_CFGR,PLLMULL3);
-	SET_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b1000 <<PLLMULL1);
 break;
 case 11:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    CLR_BIT(*RCC_CFGR,PLLMULL2);
-	CLR_BIT(*RCC_CFGR,PLLMULL3);
-	SET_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b1001 <<PLLMULL1);
 break;
 case 12:
-   CLR_BIT(*RCC_CFGR,PLLMULL1);
-   SET_BIT(*RCC_CFGR,PLLMULL2);
-   CLR_BIT(*RCC_CFGR,PLLMULL3);
-   SET_BIT(*RCC_CFGR,PLLMULL4);
+    RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b1010 <<PLLMULL1);
    break;
 case 13:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    SET_BIT(*RCC_CFGR,PLLMULL2);
-    CLR_BIT(*RCC_CFGR,PLLMULL3);
-    SET_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b1011<<PLLMULL1);
     break;
 case 14:
-	CLR_BIT(*RCC_CFGR,PLLMULL1);
-	CLR_BIT(*RCC_CFGR,PLLMULL2);
-	SET_BIT(*RCC_CFGR,PLLMULL3);
-	SET_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b1100 <<PLLMULL1);
 break;
 case 15:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    CLR_BIT(*RCC_CFGR,PLLMULL2);
-	SET_BIT(*RCC_CFGR,PLLMULL3);
-	SET_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR &=~(0b1111 <<PLLMULL1);
+	RCC->CFGR |=(0b1101 <<PLLMULL1);
 break;
 default:
-	SET_BIT(*RCC_CFGR,PLLMULL1);
-    SET_BIT(*RCC_CFGR,PLLMULL2);
-	SET_BIT(*RCC_CFGR,PLLMULL3);
-	SET_BIT(*RCC_CFGR,PLLMULL4);
+	RCC->CFGR |=(0b1111 <<PLLMULL1);
 }
 
-	SLC_PLL();
+    RCC->CR |= (1<<PLLON);
+	while(!((RCC->CR &(1<< PLLRDY))>>PLLRDY));
+	RCC->CFGR &=(0b10 <<0);
+	RCC->CFGR &=~(0b11 <<0);
+	RCC->CFGR |= (0b01 <<0);
+
+
+#endif
+
+	//to check
+	while((RCC->CFGR & (0b11<<2))!=(RCC->CFGR & 0b11));
+
+	//AHB Prescaler
+	RCC->CFGR &=~(0b1111 <<4);
+	RCC->CFGR |=(AHB_PSC <<PLLMULL1);
+
+}
+
+void RCC_Periph_Enable(AHB AHB_PER, APB1 APB1_PER, APB2 APB2_PER){
+
+#if(Rcc_periph==AHB)
+		RCC->AHBENR |= (1<<AHB_PER);
+#elif(Rcc_periph==APB1)
+		RCC->APB1ENR |= (1<<APB1_PER);
+#else
+		RCC->APB2ENR |= (1<<APB2_PER);
 #endif
 }
 
-void RCC_Periph_Enable(u8 reg,u8 periph){
+void RCC_Periph_Disable(AHB AHB_PER, APB1 APB1_PER, APB2 APB2_PER){
 
-#if(reg==0)
-		SET_BIT(*RCC_AHBENR,periph);
-#elif(reg==1)
-		SET_BIT(*RCC_APB1ENR,periph);
+#if(Rcc_periph==AHB)
+		RCC->AHBENR &= ~(1<<AHB_PER);
+#elif(Rcc_periph==APB1)
+	    RCC->APB1ENR &= ~(1<<APB1_PER);
 #else
-		SET_BIT(*RCC_APB2ENR,periph);
-#endif
-}
-
-void RCC_Periph_Disable(u8 reg,u8 periph){
-
-#if(reg==0)
-		CLR_BIT(*RCC_AHBENR,periph);
-#elif(reg==1)
-		CLR_BIT(*RCC_APB1ENR,periph);
-#else
-		CLR_BIT(*RCC_APB2ENR,periph);
+		RCC->APB2ENR&= ~(1<<APB2_PER);
 #endif
 }
