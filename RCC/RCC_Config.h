@@ -26,10 +26,10 @@
 #define PLLMULL3 20
 #define PLLMULL4 21
 #define PLLSLC  HSE //HSE or HSI
-#define Halfed 1 //1 if hse is halfed
+#define HALFED 1 //1 if hse is halfed
 #define PLLMULL 4 //bet 2 and 16
 //clk select
-#define clk HSE_Crystal //HSE_Bybass,HSE_Crystal,HSI,PLL
+#define CLK HSE_Crystal //HSE_Bybass,HSE_Crystal,HSI,PLL
 
 //AHB Prescaler
 #define PSC_1   0b0000
@@ -46,7 +46,7 @@
 
 
 //periph select for enable
-#define Rcc_periph AHB //AHB,APB1,APB2
+typedef enum{AHB,APB1,APB2}RCC_PERIPH;
 
 typedef enum
 {DMA1EN,
@@ -55,7 +55,7 @@ SRAMEN,
 FLITFEN=4,
 CRCEN=6,
 FSMCEN=8,
-SDIOEN=10} AHB;
+SDIOEN=10} AHB_PER;
 
 
 typedef enum
@@ -67,7 +67,7 @@ ADC1EN,ADC2EN,
 TIM1EN,SPI1EN,
 TIM8EN,USART1EN,
 ADC3EN,TIM9EN=19,
-TIM10EN,TIM11EN}APB2;
+TIM10EN,TIM11EN}APB2_PER;
 
 
 typedef enum
@@ -77,7 +77,15 @@ TIM12EN,TIM13EN,TIM14EN,
 WWDGEN=11,SPI2EN=14,SPI3EN,
 USART2EN=17,USART3EN,USART4EN,
 USART5EN,I2C1EN,I2C2EN,
-USBEN,CANEN=25,BKPEN=27,PWREN,DACEN}APB1;
+USBEN,CANEN=25,BKPEN=27,PWREN,DACEN}APB1_PER;
+
+typedef volatile struct{
+	RCC_PERIPH RCC_periph;
+	AHB_PER AHB;
+	APB1_PER APB1;
+	APB2_PER APB2;
+
+}BUSSES;
 
 
 

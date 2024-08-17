@@ -19,7 +19,7 @@ void RCC_Software_Rest(){
 
 
 void RCC_Init(void){
-#if clk==HSE_Bybass
+#if CLK==HSE_Bybass
 
 	RCC->CR |= (1<<HSEON);
 	RCC->CR |= (1<<HSEBYP);
@@ -28,13 +28,13 @@ void RCC_Init(void){
 	RCC->CFGR |= (0b01 <<0);
 
 
-#elif clk==HSE_Crystal
+#elif CLK==HSE_Crystal
 
 	RCC->CR |= (1<<HSEON);
 	while(!((RCC->CR &(1<<HSERDY ))>>HSERDY ));
 	RCC->CFGR &=~(0b11 <<0);
 	RCC->CFGR |= (0b01 <<0);
-#elif clk==HSI
+#elif CLK==HSI
 
 	RCC->CR |= (1<<0);
 	while(!((RCC->CR &(1<< HSIRDY))>>1));
@@ -44,7 +44,7 @@ void RCC_Init(void){
 #if PLLSLC==HSE
  //HSE 1 FOR PLL
 RCC->CR |= (1<<PLLSRC);
-#if Halfed==1
+#if HALFED==1
 
 RCC->CR |= (1<<PLLSRC);
 #else
@@ -133,24 +133,28 @@ default:
 
 }
 
-void RCC_Periph_Enable(AHB AHB_PER, APB1 APB1_PER, APB2 APB2_PER){
+void RCC_Periph_Enable(BUSSES* RCC_per){
 
-#if(Rcc_periph==AHB)
-		RCC->AHBENR |= (1<<AHB_PER);
-#elif(Rcc_periph==APB1)
-		RCC->APB1ENR |= (1<<APB1_PER);
-#else
-		RCC->APB2ENR |= (1<<APB2_PER);
-#endif
+if (RCC_per->RCC_periph==AHB)
+		RCC->AHBENR |= (1<<RCC_per->AHB);
+
+else if(RCC_per->RCC_periph==APB1)
+		RCC->APB1ENR |= (1<<RCC_per->APB1);
+
+else
+		RCC->APB2ENR |= (1<<RCC_per->APB2);
+
 }
 
-void RCC_Periph_Disable(AHB AHB_PER, APB1 APB1_PER, APB2 APB2_PER){
+void RCC_Periph_Disable(BUSSES* RCC_per){
 
-#if(Rcc_periph==AHB)
-		RCC->AHBENR &= ~(1<<AHB_PER);
-#elif(Rcc_periph==APB1)
-	    RCC->APB1ENR &= ~(1<<APB1_PER);
-#else
-		RCC->APB2ENR&= ~(1<<APB2_PER);
-#endif
+if(RCC_per->RCC_periph==AHB)
+		RCC->AHBENR &= ~(1<<RCC_per->AHB);
+
+else if(RCC_per->RCC_periph==APB1)
+
+	    RCC->APB1ENR &= ~(1<<RCC_per->APB1);
+else
+		RCC->APB2ENR&= ~(1<<RCC_per->APB2);
+
 }
